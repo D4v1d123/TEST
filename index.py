@@ -7,7 +7,7 @@ PORT = 8000
 
 def consultUser(id):
     while True:
-        requests.get(f'https://api-ticktick.onrender.com/api/v1/users/{id}/')
+        requests.get(f'https://api-ticktick.onrender.com/')
         print('Activated API')
         sleep(780)  # 13 minutos
 
