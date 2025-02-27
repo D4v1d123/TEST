@@ -1,0 +1,12 @@
+<html>
+<body>
+    <script> 
+        async function consultUser () {
+            console.log('Activating API')
+            response = await fetch(`https://api-ticktick.onrender.com/api/v1/users/1/`)
+        }
+        
+        setInterval(() => consultUser(), 780000)
+    </script>
+</body>
+</html>
