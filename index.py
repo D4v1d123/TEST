@@ -1,22 +1,46 @@
-from http.server import SimpleHTTPRequestHandler, HTTPServer
-from time import sleep
 import threading
+import time
 import requests
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
-PORT = 8000
+# Configuración de la API externa
+API_URL = "https://api-ticktick.onrender.com/api/v1/users/1/"  # Reemplaza con la API real
+INTERVALO_SEGUNDOS = 60  # Cada cuánto tiempo hacer la consulta
 
-def consultUser(id):
+# Función que consulta la API
+def consultar_api():
     while True:
-        requests.get(f'https://api-ticktick.onrender.com/api/v1/users/')
-        print('Activated API')
-        sleep(780)  # 13 minutos
+        try:
+            print("Consultando API...")
+            respuesta = requests.get(API_URL)
+            if respuesta.status_code == 200:
+                print("Respuesta:", respuesta.json())
+            else:
+                print("Error en la consulta:", respuesta.status_code)
+        except Exception as e:
+            print("Error en la solicitud:", e)
 
-# Configurar y ejecutar el servidor en un hilo separado
-server = HTTPServer(('0.0.0.0', PORT), SimpleHTTPRequestHandler)
+        time.sleep(INTERVALO_SEGUNDOS)  # Espera antes de la siguiente consulta
 
-# Iniciar el proceso de consulta en un hilo aparte
-thread = threading.Thread(target=consultUser, args=(1,), daemon=True)
-thread.start()
+# Clase para el servidor HTTP (necesario para Render)
+class SimpleHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b"Servicio corriendo correctamente")
 
-print(f"Starting server on port {PORT}...")
-server.serve_forever()
+# Función para iniciar el servidor HTTP
+def iniciar_servidor():
+    server = HTTPServer(("0.0.0.0", 8000), SimpleHandler)
+    print("Servidor corriendo en el puerto 8000...")
+    server.serve_forever()
+
+# Crear e iniciar hilos para consulta API y servidor web
+if __name__ == "__main__":
+    # Hilo para la consulta a la API
+    hilo_consulta = threading.Thread(target=consultar_api, daemon=True)
+    hilo_consulta.start()
+
+    # Iniciar el servidor HTTP en el hilo principal
+    iniciar_servidor()
